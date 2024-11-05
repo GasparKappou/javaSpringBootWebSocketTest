@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Chat en línea</title>
+</head>
+<body>
+	<div id="chat">
+		
+		<input id="nameInput" type="text" placeholder="Escribe tu nombre">
+		<input id="messageInput" type="text" placeholder="Escribe tu mensaje">
+		<button onclick="sendMessage()">Enviar</button>
+		<ul id="messages"></ul>
+	</div>
+
+	<script>
+		let socket = null;
+
+		function connect() {
+			socket = new WebSocket("ws://localhost:8080/chat");
+
+			socket.onopen = function() {
+				console.log("Conectado al WebSocket");
+			};
+
+			socket.onmessage = function(event) {
+				showMessage(event.data);
+			};
+
+			socket.onclose = function() {
+				console.log("Desconectado del WebSocket");
+			};
+
+			socket.onerror = function(error) {
+				console.error("Error en WebSocket: ", error);
+			};
+		}
+
+		function sendMessage() {
+			const messageInput = document.getElementById('messageInput');
+			const message = {
+				sender : document.getElementById('nameInput').value, // Puedes usar un valor dinámico si es necesario
+				content : messageInput.value
+			};
+
+			// Envía el mensaje como una cadena JSON
+			console.log(message);
+			socket.send(message);
+			messageInput.value = '';
+		}
+
+		function showMessage(message) {
+			const messages = document.getElementById('messages');
+			const messageElement = document.createElement('li');
+			messageElement.appendChild(document.createTextNode(message.sender + ": " + message.content));
+			messages.appendChild(messageElement);
+		}
+
+		connect();
+	</script>
+</body>
+</html>
